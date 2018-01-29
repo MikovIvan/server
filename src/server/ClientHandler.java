@@ -39,17 +39,11 @@ public class ClientHandler {
                     if(nick != null){ // если пользователь указал правильные логин/пароль
                         if(!server.isNickBusy(nick)){
                             sendMessage("/authok " + nick);
-                            this.name = nick;
-                            server.broadcast(this.name + " зашел в чат");
                             break;
                         }else sendMessage("Учетная запись уже используется");
                     }else sendMessage("Не верные логин/пароль");
                 }else sendMessage("Для начала надо авторизоваться!");
           } //пока не прервется цикл авторизации, не начнется цикл приема сообщений
-                while (true) {
-                    String msg = in.readUTF();
-                    System.out.println("client: " + msg);
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
