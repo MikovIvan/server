@@ -1,28 +1,21 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import static server.database.ConnectSQLiteServer.login;
 
 public class ClientHandler {
     private Server server;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
-    private String name;
-
-    public String getName() {
-        return name;
-    }
 
     public ClientHandler(Socket socket, Server server) {
         try {
             this.server = server;
             this.socket = socket;
-            name = "undefined";
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(this.socket.getInputStream());
+            out= new DataOutputStream(this.socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -30,20 +23,21 @@ public class ClientHandler {
         new Thread(() -> {
             try {
                 //Авторизация
-            while(true){
-                String msg = in.readUTF();
-                if(msg.startsWith("/auth")){
-                    String[] elements  = msg.split(" ");
-                    String nick = server.getAuthService().getNickByLoginPass(elements[1], elements[2]);
-                    System.out.println(nick);
-                    if(nick != null){ // если пользователь указал правильные логин/пароль
-                        if(!server.isNickBusy(nick)){
-                            sendMessage("/authok " + nick);
-                            break;
-                        }else sendMessage("Учетная запись уже используется");
-                    }else sendMessage("Не верные логин/пароль");
-                }else sendMessage("Для начала надо авторизоваться!");
-          } //пока не прервется цикл авторизации, не начнется цикл приема сообщений
+                while (true) {
+                    String message = in.readUTF();
+                    if (message.startsWith("/auth")) {
+                        String[] elements = message.split(" ");
+                        if (login(elements[1], elements[2]).equals(true)) {
+                            sendMessage("/authok ");
+                        } else {
+                            sendMessage("/authfailed ");
+                        }
+                    }
+                    System.out.println("message: " + message);
+                    System.out.println("ip: " + socket.getInetAddress());
+                }
+            }catch (EOFException e){
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
