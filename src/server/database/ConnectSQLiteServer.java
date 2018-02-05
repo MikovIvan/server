@@ -1,8 +1,10 @@
 package server.database;
 
+import server.Const;
+
 import java.sql.*;
 
-public class ConnectSQLiteServer {
+public class ConnectSQLiteServer implements Const {
     private static Connection connection;
     private static Statement statement;
 
@@ -25,7 +27,6 @@ public class ConnectSQLiteServer {
         Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:dropbox.db");
         System.out.println("Db connected");
-        statement = connection.createStatement();
     }
 
     public static void disconnectDB() {
@@ -37,8 +38,21 @@ public class ConnectSQLiteServer {
         }
     }
 
-//    public static void getData() throws SQLException{
-//        ResultSet resultSet = statement.executeQuery("SELECT name FROM users WHERE id > 0");
-//        while(resultSet.next()) System.out.println(resultSet.getInt(1) + " " + resultSet.getString("name"));
-//    }
+    public static String login(String email, String password){
+        String result="false";
+        try {
+            PreparedStatement ps = connection.prepareStatement(SELECT_USER);
+            ps.setString(1,email);
+            ps.setString(2,password);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                result = "true";
+            }
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 }
