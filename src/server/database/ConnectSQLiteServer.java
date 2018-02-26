@@ -1,10 +1,13 @@
 package server.database;
 
 import server.Const;
+import server.File;
+import server.SqlQuery;
 
 import java.sql.*;
+import java.util.ArrayList;
 
-public class ConnectSQLiteServer implements Const {
+public class ConnectSQLiteServer implements Const, SqlQuery {
     private static Connection connection;
     private static Statement statement;
 
@@ -48,11 +51,45 @@ public class ConnectSQLiteServer implements Const {
             if(rs.next()){
                 result = "true";
             }
-            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public static void registration(String name, String surName , String email, String password){
+        try{
+            PreparedStatement ps = connection.prepareStatement(REGISTRATION);
+            ps.setString(2,name);
+            ps.setString(3,surName);
+            ps.setString(1,email);
+            ps.setString(4,password);
+            ps.setString(5,"C:\\Android\\server\\storage\\" + email);
+            ps.executeUpdate();
+            System.out.println("add user");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static ArrayList<File> getFiles(int userId) {
+        ArrayList<File> files = null;
+        try {
+            files = new ArrayList<>();
+            PreparedStatement ps = connection.prepareStatement(SELECT_FILES);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                files.add(new File(userId, rs.getString("file_name"), rs.getString("file_path")));
+            }
+            for (File file : files) {
+                System.out.println(file.getFileName());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return files;
     }
 
 }
